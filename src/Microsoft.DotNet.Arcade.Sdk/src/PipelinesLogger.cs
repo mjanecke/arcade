@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.Arcade.Sdk.src
             var targetsNotLogged = parameters["TargetsNotLogged"];
             if (!string.IsNullOrEmpty(targetsNotLogged))
             {
-                _ignoredTargets.UnionWith(targetsNotLogged.Split(new Char[] { ',' }, StringSplitOptions.RemoveEmptyEntries));
+                _ignoredTargets.UnionWith(targetsNotLogged.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries));
             }
 
             eventSource.ErrorRaised += OnErrorRaised;
