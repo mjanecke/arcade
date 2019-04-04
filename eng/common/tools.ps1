@@ -449,6 +449,16 @@ function Stop-Processes() {
 # Terminates the script if the build fails.
 #
 function MSBuild() {
+  function GetArcadeSdkDllPath() {
+    $toolsetBuildProject = InitializeToolset
+    $tf = if ($msbuildEngine -eq "dotnet") { "netcoreapp2.1" } else { "net472" }
+    $path = Split-Path -parent $toolsetBuildProject
+    return Join-Path $path "$tf\Microsoft.DotNet.Arcade.Sdk.dll"
+  }
+
+  $buildTool = InitializeBuildTool
+  $cmdArgs = "$($buildTool.Command) /m /nologo /clp:Summary /v:$verbosity /nr:$nodeReuse /p:ContinuousIntegrationBuild=$ci"
+
   if ($ci) {
     if (!$binaryLog) {
       throw "Binary log must be enabled in CI build."
@@ -457,11 +467,10 @@ function MSBuild() {
     if ($nodeReuse) {
       throw "Node reuse must be disabled in CI build."
     }
+
+    $arcadeTasksFilePath = GetArcadeSdkDllPath
+    $cmdArgs += " /logger:`"$arcadeTasksFilePath`""
   }
-
-  $buildTool = InitializeBuildTool
-
-  $cmdArgs = "$($buildTool.Command) /m /nologo /clp:Summary /v:$verbosity /nr:$nodeReuse /p:ContinuousIntegrationBuild=$ci"
 
   if ($warnAsError) { 
     $cmdArgs += " /warnaserror /p:TreatWarningsAsErrors=true" 
