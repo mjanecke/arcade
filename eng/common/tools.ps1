@@ -476,9 +476,6 @@ function MSBuild() {
 # Terminates the script if the build fails.
 #
 function MSBuild-Core() {
-  $buildTool = InitializeBuildTool
-  $cmdArgs = "$($buildTool.Command) /m /nologo /clp:Summary /v:$verbosity /nr:$nodeReuse /p:ContinuousIntegrationBuild=$ci"
-
   if ($ci) {
     if (!$binaryLog) {
       throw "Binary log must be enabled in CI build."
@@ -488,6 +485,11 @@ function MSBuild-Core() {
       throw "Node reuse must be disabled in CI build."
     }
   }
+
+  $buildTool = InitializeBuildTool
+
+  $cmdArgs = "$($buildTool.Command) /m /nologo /clp:Summary /v:$verbosity /nr:$nodeReuse /p:ContinuousIntegrationBuild=$ci"
+
 
   if ($warnAsError) { 
     $cmdArgs += " /warnaserror /p:TreatWarningsAsErrors=true" 
