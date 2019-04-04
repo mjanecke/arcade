@@ -455,16 +455,12 @@ function Stop-Processes() {
 # Terminates the script if the build fails.
 #
 function MSBuild() {
-  function GetArcadeSdkDllPath() {
+  if ($pipelinesLog) {
     $toolsetBuildProject = InitializeToolset
     $tf = if ($msbuildEngine -eq "dotnet") { "netcoreapp2.1" } else { "net472" }
     $path = Split-Path -parent $toolsetBuildProject
-    return Join-Path $path "$tf\Microsoft.DotNet.Arcade.Sdk.dll"
-  }
-
-  if ($pipelinesLog) {
-    $arcadeTasksFilePath = GetArcadeSdkDllPath
-    $args += " /logger:`"$arcadeTasksFilePath`""
+    $path = Join-Path $path "$tf\Microsoft.DotNet.Arcade.Sdk.dll"
+    $args += " /logger:`"$path`""
   }
 
   MSBuild-Core @args
