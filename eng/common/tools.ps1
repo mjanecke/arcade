@@ -11,6 +11,12 @@
 # Binary log must be enabled on CI.
 [bool]$binaryLog = if (Test-Path variable:binaryLog) { $binaryLog } else { $ci }
 
+# Set to true to use the pipelines logger which will enable Azure logging output.
+# https://github.com/Microsoft/azure-pipelines-tasks/blob/master/docs/authoring/commands.md
+# This flag is meant as a temporary opt-opt for the feature while validate it across
+# our consumers. It will be deleted in the future.
+[bool]$pipelinesLog = if (Test-Path variable:pipelinesLog) { $pipelinesLog } else { $ci }
+
 # Turns on machine preparation/clean up code that changes the machine state (e.g. kills build processes).
 [bool]$prepareMachine = if (Test-Path variable:prepareMachine) { $prepareMachine } else { $false }
 
@@ -467,7 +473,9 @@ function MSBuild() {
     if ($nodeReuse) {
       throw "Node reuse must be disabled in CI build."
     }
+  }
 
+  if ($pipelinesLog) {
     $arcadeTasksFilePath = GetArcadeSdkDllPath
     $cmdArgs += " /logger:`"$arcadeTasksFilePath`""
   }

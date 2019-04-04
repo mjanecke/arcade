@@ -55,8 +55,7 @@ namespace Microsoft.DotNet.Arcade.Sdk.src
             eventSource.ErrorRaised += OnErrorRaised;
             eventSource.WarningRaised += OnWarningRaised;
 
-            var rootDetailId = parameters["RootDetailId"];
-            if (!string.IsNullOrEmpty(rootDetailId))
+            if (Verbosity == LoggerVerbosity.Diagnostic)
             {
                 eventSource.ProjectFinished += OnProjectFinished;
                 eventSource.ProjectStarted += OnProjectStarted;
