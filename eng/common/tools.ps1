@@ -425,7 +425,7 @@ function InitializeToolset() {
   $bl = if ($binaryLog) { "/bl:" + (Join-Path $LogDir "ToolsetRestore.binlog") } else { "" }
 
   '<Project Sdk="Microsoft.DotNet.Arcade.Sdk"/>' | Set-Content $proj
-  MSBuild $proj $bl /t:__WriteToolsetLocation /clp:ErrorsOnly`;NoSummary /p:__ToolsetLocationOutputFile=$toolsetLocationFile
+  MSBuild-Core $proj $bl /t:__WriteToolsetLocation /clp:ErrorsOnly`;NoSummary /p:__ToolsetLocationOutputFile=$toolsetLocationFile
 
   $path = Get-Content $toolsetLocationFile -TotalCount 1
   if (!(Test-Path $path)) {
@@ -462,6 +462,20 @@ function MSBuild() {
     return Join-Path $path "$tf\Microsoft.DotNet.Arcade.Sdk.dll"
   }
 
+  if ($pipelinesLog) {
+    $arcadeTasksFilePath = GetArcadeSdkDllPath
+    $args += " /logger:`"$arcadeTasksFilePath`""
+  }
+
+  MSBuild-Core @args
+}
+
+#
+# Executes msbuild (or 'dotnet msbuild') with arguments passed to the function.
+# The arguments are automatically quoted.
+# Terminates the script if the build fails.
+#
+function MSBuild-Core() {
   $buildTool = InitializeBuildTool
   $cmdArgs = "$($buildTool.Command) /m /nologo /clp:Summary /v:$verbosity /nr:$nodeReuse /p:ContinuousIntegrationBuild=$ci"
 
@@ -473,11 +487,6 @@ function MSBuild() {
     if ($nodeReuse) {
       throw "Node reuse must be disabled in CI build."
     }
-  }
-
-  if ($pipelinesLog) {
-    $arcadeTasksFilePath = GetArcadeSdkDllPath
-    $cmdArgs += " /logger:`"$arcadeTasksFilePath`""
   }
 
   if ($warnAsError) { 
